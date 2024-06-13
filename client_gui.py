@@ -13,7 +13,7 @@ LEAVE_ROOM = "!LEAVE"
 LIST_ROOMS = "!LIST"
 REGISTER = "!REGISTER"
 LOGIN = "!LOGIN"
-SERVER = "192.168.1.5"
+SERVER = "10.101.57.124"
 ADDR = (SERVER, PORT)
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -122,19 +122,20 @@ def chat_page():
 
 def on_login():
     email = simpledialog.askstring("Login", "Enter email:")
-    password = simpledialog.askstring("Login", "Enter password:", show='*')
+    password = simpledialog.askstring("Login", "Enter password:", show='')
     if email and password:
         send_message(f"{LOGIN} {email} {password}")
         receive_thread = threading.Thread(target=receive_messages)
         receive_thread.start()
         receive_thread.join()
         if authenticated:
+            window.withdraw()
             chat_page()
 
 
 def on_register():
     email = simpledialog.askstring("Register", "Enter email:")
-    password = simpledialog.askstring("Register", "Enter password:", show='*')
+    password = simpledialog.askstring("Register", "Enter password:", show='')
     username = simpledialog.askstring("Register", "Enter username:")
     if email and password and username:
         send_message(f"{REGISTER} {email} {password} {username}")
@@ -142,6 +143,7 @@ def on_register():
         receive_thread.start()
         receive_thread.join()
         if authenticated:
+            window.withdraw()
             chat_page()
 
 
