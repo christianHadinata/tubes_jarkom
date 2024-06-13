@@ -114,7 +114,7 @@ def handle_client(conn, addr):
                         if room_owner[current_room] == conn:
                             for member in rooms[current_room]:
                                 member.send(
-                                    "The room owner has left the room. You have been removed from the room".encode(FORMAT))
+                                    "The room owner has left the room. You have been removed from the room, you will exit the chat in 5 seconds, Goodbye!".encode(FORMAT))
                             del rooms[current_room]
                             del room_owner[current_room]
                         current_room = None

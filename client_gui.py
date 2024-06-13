@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import simpledialog, messagebox, scrolledtext
 import threading
 import socket
+import time
 
 HEADER = 64
 PORT = 5050
@@ -36,13 +37,19 @@ def receive_messages():
                     break
                 if "Login successful." in message:
                     break
-                if "The room owner has left the room. You have been removed from the room" in message:
-                    send_message(HANDLE_CURRENTROOM_FALSE)
+                if "Joined room" in message:
+                    on_clear_chat()
 
                 chat_box.config(state=tk.NORMAL)
                 chat_box.insert(tk.END, message + '\n', 'received')
                 chat_box.yview(tk.END)
                 chat_box.config(state=tk.DISABLED)
+
+                if "The room owner has left the room. You have been removed from the room" in message:
+                    send_message(HANDLE_CURRENTROOM_FALSE)
+                    time.sleep(5)
+                    on_clear_chat()
+
         except Exception as e:
             print(e)
             client.close()
@@ -201,6 +208,12 @@ def on_closing():
     send_message(DISCONNECT_MESSAGE)
     print("logged out")
     window.destroy()
+
+
+def on_clear_chat():
+    chat_box.config(state=tk.NORMAL)
+    chat_box.delete(1.0, tk.END)
+    chat_box.config(state=tk.DISABLED)
 
 
 # Thread untuk halaman utama (login/register)
