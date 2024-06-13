@@ -15,6 +15,7 @@ LEAVE_ROOM = "!LEAVE"
 LIST_ROOMS = "!LIST"
 REGISTER = "!REGISTER"
 LOGIN = "!LOGIN"
+HANDLE_CURRENTROOM_FALSE = "!CURRENTROOM"
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
@@ -23,10 +24,10 @@ rooms = {}
 clients = {}
 # Dictionary to store user data (email -> (username, hashed_password))
 users = {}
+room_owner = {}
 
 
 def broadcast(message, room, exception=None):
-    # client adalah conn
     for client in rooms[room]:
         if client != exception:
             client.send(message.encode(FORMAT))
@@ -86,6 +87,7 @@ def handle_client(conn, addr):
                     _, room_name = msg.split(maxsplit=1)
                     if room_name not in rooms:
                         rooms[room_name] = []
+                        room_owner[room_name] = conn
                         conn.send(f"Room {room_name} created.".encode(FORMAT))
                     else:
                         conn.send(
@@ -109,8 +111,12 @@ def handle_client(conn, addr):
                     if current_room:
                         rooms[current_room].remove(conn)
                         broadcast(f"[{username}] left the room.", current_room)
-                        if not rooms[current_room]:
+                        if room_owner[current_room] == conn:
+                            for member in rooms[current_room]:
+                                member.send(
+                                    "The room owner has left the room. You have been removed from the room".encode(FORMAT))
                             del rooms[current_room]
+                            del room_owner[current_room]
                         current_room = None
                         conn.send("Left the room.".encode(FORMAT))
                     else:
@@ -121,6 +127,8 @@ def handle_client(conn, addr):
                     print(conn)
                     conn.send(room_list.encode(FORMAT))
 
+                elif msg == HANDLE_CURRENTROOM_FALSE:
+                    current_room = False
                 else:
                     if current_room:
                         broadcast(f"[{username}] {msg}", current_room, conn)

@@ -15,6 +15,7 @@ REGISTER = "!REGISTER"
 LOGIN = "!LOGIN"
 SERVER = "10.101.57.124"
 ADDR = (SERVER, PORT)
+HANDLE_CURRENTROOM_FALSE = "!CURRENTROOM"
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(ADDR)
@@ -35,6 +36,9 @@ def receive_messages():
                     break
                 if "Login successful." in message:
                     break
+                if "The room owner has left the room. You have been removed from the room" in message:
+                    send_message(HANDLE_CURRENTROOM_FALSE)
+
                 chat_box.config(state=tk.NORMAL)
                 chat_box.insert(tk.END, message + '\n', 'received')
                 chat_box.yview(tk.END)
@@ -53,7 +57,7 @@ def send_message(msg):
     client.send(send_length)
     client.send(message)
 
-    if (msg[:9] != REGISTER and msg[:6] != LOGIN):
+    if (msg[:9] != REGISTER and msg[:6] != LOGIN and msg[:12] != HANDLE_CURRENTROOM_FALSE):
         chat_box.config(state=tk.NORMAL)
         chat_box.insert(tk.END, f"You: {msg}\n", 'sent')
         chat_box.yview(tk.END)
