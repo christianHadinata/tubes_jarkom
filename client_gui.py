@@ -49,6 +49,16 @@ def receive_messages():
                     send_message(HANDLE_CURRENTROOM_FALSE)
                     time.sleep(5)
                     on_clear_chat()
+                    chat_box.config(state=tk.NORMAL)
+                    chat_box.insert(tk.END, f"Welcome back to main menu!\n", )
+                    chat_box.yview(tk.END)
+                    chat_box.config(state=tk.DISABLED)
+                elif "Left the room." in message:
+                    on_clear_chat()
+                    chat_box.config(state=tk.NORMAL)
+                    chat_box.insert(tk.END, f"Welcome back to main menu!\n", )
+                    chat_box.yview(tk.END)
+                    chat_box.config(state=tk.DISABLED)
 
         except Exception as e:
             print(e)
