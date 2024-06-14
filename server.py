@@ -3,6 +3,8 @@ import socket
 import threading
 import hashlib
 
+from connectDB import connectionDB
+
 HEADER = 64
 PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
@@ -59,16 +61,23 @@ def handle_client(conn, addr):
                 if not authenticated:
                     if msg.startswith(REGISTER):
                         _, email, password, username = msg.split(maxsplit=3)
-                        if email in users:
+
+                        checkEmail = checkIsEmailExist(email)
+                        if checkEmail == True:
                             conn.send(
                                 "Email already registered.".encode(FORMAT))
                         else:
                             hashed_password = hashlib.sha256(
                                 password.encode()).hexdigest()
-                            users[email] = (username, hashed_password)
-                            authenticated = True
-                            conn.send(
-                                "Registration successful.".encode(FORMAT))
+                            statusMasukanUser = registerUser(
+                                email, username, hashed_password)
+                            if (statusMasukanUser == True):
+                                authenticated = True
+                                conn.send(
+                                    "Registration successful.".encode(FORMAT))
+                            else:
+                                conn.send(
+                                    "There is an error".encode(FORMAT))
 
                     elif msg.startswith(LOGIN):
                         _, email, password = msg.split(maxsplit=2)
@@ -146,6 +155,35 @@ def handle_client(conn, addr):
             del rooms[current_room]
 
     conn.close()
+
+
+def checkIsEmailExist(Email):
+    SQL_QUERY = '''
+    SELECT Email FROM Client WHERE Email = ?
+    '''
+
+    result = connectionDB.execute(SQL_QUERY, (Email)).fetchone()
+
+    if (result != None):
+        # kalau email nya udah kepake
+        return True
+    else:
+        # kalau email nya belum kepake orang lain
+        return False
+
+
+def registerUser(Email, Username, Password):
+    SQL_QUERY = '''
+    INSERT INTO CLIENT(Email, Username, Password)
+    VALUES(?, ?, ?)
+    '''
+
+    try:
+        connectionDB.execute(SQL_QUERY, (Email, Username, Password))
+        connectionDB.commit()
+        return True
+    except:
+        return False
 
 
 def start():
