@@ -27,6 +27,7 @@ server.bind(ADDR)
 rooms = {}
 room_owner = {}
 descriptionRooms = {}
+dictParticipantsInRoom = {}
 
 
 def broadcast(message, room, exception=None):
@@ -107,6 +108,8 @@ def handle_client(conn, addr):
                         rooms[room_name] = []
                         room_owner[room_name] = conn
                         descriptionRooms[room_name] = descRoom
+                        dictParticipantsInRoom[room_name] = {}
+                        dictParticipantsInRoom[room_name][conn] = username
                         conn.send(f"Room {room_name} created.".encode(FORMAT))
                     else:
                         conn.send(
@@ -119,6 +122,7 @@ def handle_client(conn, addr):
                             rooms[current_room].remove(conn)
                         rooms[room_name].append(conn)
                         current_room = room_name
+                        dictParticipantsInRoom[room_name][conn] = username
                         conn.send(f"Joined room {room_name}".encode(FORMAT))
                         broadcast(f"[{username}] joined the room.",
                                   current_room, conn)
@@ -128,6 +132,7 @@ def handle_client(conn, addr):
 
                 elif msg.startswith(LEAVE_ROOM):
                     if current_room:
+                        dictParticipantsInRoom[current_room].pop(conn)
                         rooms[current_room].remove(conn)
                         broadcast(f"[{username}] left the room.", current_room)
                         if room_owner[current_room] == conn:
@@ -136,6 +141,8 @@ def handle_client(conn, addr):
                                     "The room owner has left the room. You have been removed from the room, you will exit the chat in 5 seconds, Goodbye!".encode(FORMAT))
                             del rooms[current_room]
                             del room_owner[current_room]
+                            del descriptionRooms[current_room]
+                            del dictParticipantsInRoom[current_room]
                         current_room = None
                         conn.send("Left the room.".encode(FORMAT))
                     else:
@@ -148,11 +155,22 @@ def handle_client(conn, addr):
 
                 elif msg == HANDLE_CURRENTROOM_FALSE:
                     current_room = False
+
                 elif msg.startswith(ABOUT):
                     if (current_room):
-                        print(descriptionRooms[current_room])
+                        dictUserDiRoom = dictParticipantsInRoom[current_room]
+                        messageResult = "Description about room:\n"
+                        messageResult = messageResult + \
+                            descriptionRooms[current_room] + "\n\n"
+
+                        messageResult = messageResult + "Participants in room: \n"
+                        for currUsername in dictUserDiRoom.values():
+                            messageResult = messageResult + currUsername + "\n"
+
+                        conn.send(messageResult.encode(FORMAT))
+
                     else:
-                        print("ga ada euy")
+                        conn.send("You are in lobby room".encode(FORMAT))
                 else:
                     if current_room:
                         broadcast(
