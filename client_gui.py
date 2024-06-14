@@ -18,6 +18,7 @@ SERVER = "192.168.1.5"
 ADDR = (SERVER, PORT)
 HANDLE_CURRENTROOM_FALSE = "!CURRENTROOM"
 MSGUSER = "!MSGUSER"
+ABOUT = "!ABOUT"
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(ADDR)
@@ -148,6 +149,10 @@ def chat_page():
         window, text="Clear Chat", command=on_clear_chat)
     clear_chat_button.pack(side=tk.RIGHT)
 
+    about_button = tk.Button(
+        window, text="About", command=on_about_button)
+    about_button.pack(side=tk.RIGHT)
+
     window.protocol("WM_DELETE_WINDOW", on_closing)
 
     receive_thread = threading.Thread(target=receive_messages)
@@ -195,8 +200,10 @@ def on_send():
 def on_create_room():
     if authenticated:
         room_name = simpledialog.askstring("Create Room", "Enter room name:")
-        if room_name:
-            send_message(f"{CREATE_ROOM} {room_name}")
+        description_room = simpledialog.askstring(
+            "Description Room", "Enter description room:")
+        if room_name and description_room:
+            send_message(f"{CREATE_ROOM} {room_name} {description_room}")
     else:
         messagebox.showwarning("Authentication required",
                                "Please login first.")
@@ -238,6 +245,14 @@ def on_clear_chat():
     chat_box.config(state=tk.NORMAL)
     chat_box.delete(1.0, tk.END)
     chat_box.config(state=tk.DISABLED)
+
+
+def on_about_button():
+    if authenticated:
+        send_message(ABOUT)
+    else:
+        messagebox.showwarning("Authentication required",
+                               "Please login first.")
 
 
 # Thread untuk halaman utama (login/register)

@@ -19,12 +19,14 @@ REGISTER = "!REGISTER"
 LOGIN = "!LOGIN"
 HANDLE_CURRENTROOM_FALSE = "!CURRENTROOM"
 MSGUSER = "!MSGUSER"
+ABOUT = "!ABOUT"
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 
 rooms = {}
 room_owner = {}
+descriptionRooms = {}
 
 
 def broadcast(message, room, exception=None):
@@ -100,10 +102,11 @@ def handle_client(conn, addr):
 
                 # Process other commands only if authenticated
                 if msg.startswith(CREATE_ROOM):
-                    _, room_name = msg.split(maxsplit=1)
+                    _, room_name, descRoom = msg.split(maxsplit=2)
                     if room_name not in rooms:
                         rooms[room_name] = []
                         room_owner[room_name] = conn
+                        descriptionRooms[room_name] = descRoom
                         conn.send(f"Room {room_name} created.".encode(FORMAT))
                     else:
                         conn.send(
@@ -145,6 +148,11 @@ def handle_client(conn, addr):
 
                 elif msg == HANDLE_CURRENTROOM_FALSE:
                     current_room = False
+                elif msg.startswith(ABOUT):
+                    if (current_room):
+                        print(descriptionRooms[current_room])
+                    else:
+                        print("ga ada euy")
                 else:
                     if current_room:
                         broadcast(
