@@ -18,14 +18,12 @@ LIST_ROOMS = "!LIST"
 REGISTER = "!REGISTER"
 LOGIN = "!LOGIN"
 HANDLE_CURRENTROOM_FALSE = "!CURRENTROOM"
+MSGUSER = "!MSGUSER"
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 
 rooms = {}
-clients = {}
-# Dictionary to store user data (email -> (username, hashed_password))
-users = {}
 room_owner = {}
 
 
@@ -149,7 +147,8 @@ def handle_client(conn, addr):
                     current_room = False
                 else:
                     if current_room:
-                        broadcast(f"[{username}] {msg}", current_room, conn)
+                        broadcast(
+                            f"!MSGUSER[{username}] {msg}", current_room, conn)
                     else:
                         conn.send("You are not in any room.".encode(FORMAT))
 

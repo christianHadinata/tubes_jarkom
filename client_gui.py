@@ -17,6 +17,7 @@ LOGIN = "!LOGIN"
 SERVER = "192.168.1.5"
 ADDR = (SERVER, PORT)
 HANDLE_CURRENTROOM_FALSE = "!CURRENTROOM"
+MSGUSER = "!MSGUSER"
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(ADDR)
@@ -30,6 +31,13 @@ def receive_messages():
             message = client.recv(2048).decode(FORMAT)
             print(message)
             if message:
+                if "!MSGUSER" in message:
+                    message = message[8:]
+                    chat_box.config(state=tk.NORMAL)
+                    chat_box.insert(tk.END, message + '\n', 'received')
+                    chat_box.yview(tk.END)
+                    chat_box.config(state=tk.DISABLED)
+                    continue
                 if "successful" in message:
                     global authenticated
                     authenticated = True
@@ -41,7 +49,7 @@ def receive_messages():
                     on_clear_chat()
 
                 chat_box.config(state=tk.NORMAL)
-                chat_box.insert(tk.END, message + '\n', 'received')
+                chat_box.insert(tk.END, message + '\n', 'system')
                 chat_box.yview(tk.END)
                 chat_box.config(state=tk.DISABLED)
 
@@ -50,13 +58,15 @@ def receive_messages():
                     time.sleep(5)
                     on_clear_chat()
                     chat_box.config(state=tk.NORMAL)
-                    chat_box.insert(tk.END, f"Welcome back to main menu!\n", )
+                    chat_box.insert(
+                        tk.END, f"Welcome back to main menu!\n", 'system')
                     chat_box.yview(tk.END)
                     chat_box.config(state=tk.DISABLED)
                 elif "Left the room." in message:
                     on_clear_chat()
                     chat_box.config(state=tk.NORMAL)
-                    chat_box.insert(tk.END, f"Welcome back to main menu!\n", )
+                    chat_box.insert(
+                        tk.END, f"Welcome back to main menu!\n", "system")
                     chat_box.yview(tk.END)
                     chat_box.config(state=tk.DISABLED)
 
@@ -107,6 +117,7 @@ def chat_page():
         frame, state=tk.DISABLED, wrap=tk.WORD)
     chat_box.tag_config('sent', justify='right')
     chat_box.tag_config('received', justify='left')
+    chat_box.tag_config("system", justify="center")
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     chat_box.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
     frame.pack(expand=True, fill=tk.BOTH)
@@ -207,7 +218,6 @@ def on_leave_room():
 
 def on_list_rooms():
     if authenticated:
-        print("heree")
         send_message(LIST_ROOMS)
     else:
         messagebox.showwarning("Authentication required",
