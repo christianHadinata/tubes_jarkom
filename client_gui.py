@@ -144,6 +144,10 @@ def chat_page():
         window, text="List Rooms", command=on_list_rooms)
     list_rooms_button.pack(side=tk.LEFT)
 
+    clear_chat_button = tk.Button(
+        window, text="Clear Chat", command=on_clear_chat)
+    clear_chat_button.pack(side=tk.RIGHT)
+
     window.protocol("WM_DELETE_WINDOW", on_closing)
 
     receive_thread = threading.Thread(target=receive_messages)
