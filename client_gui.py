@@ -117,7 +117,7 @@ def chat_page():
         frame, state=tk.DISABLED, wrap=tk.WORD)
     chat_box.tag_config('sent', justify='right')
     chat_box.tag_config('received', justify='left')
-    chat_box.tag_config("system", justify="center")
+    chat_box.tag_config("system", justify="center", foreground="gray")
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     chat_box.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
     frame.pack(expand=True, fill=tk.BOTH)
