@@ -1,20 +1,20 @@
 from connectDB import connectionDB
 
 
-def checkIsEmailExist(Email):
+def getUserData(Email):
     SQL_QUERY = '''
-    SELECT Email FROM Client WHERE Email = ?
+    SELECT Username, Password FROM CLIENT WHERE Email = ?
     '''
-
     result = connectionDB.execute(SQL_QUERY, (Email)).fetchone()
 
-    if (result != None):
-        # kalau email nya udah kepake
-        return True
-    else:
-        # kalau email nya belum kepake orang lain
-        return False
+    dictDataUser = {
+        "Username": result[0],
+        "Hashed_DB_Password": result[1]
+    }
+
+    return dictDataUser
 
 
-hasil = checkIsEmailExist("ch@gmail.com")
-print(hasil)
+hasil = getUserData("chris@gmail.com")
+print(hasil["Username"])
+print(hasil["Hashed_DB_Password"])

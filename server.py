@@ -81,14 +81,23 @@ def handle_client(conn, addr):
 
                     elif msg.startswith(LOGIN):
                         _, email, password = msg.split(maxsplit=2)
-                        if email in users and users[email][1] == hashlib.sha256(password.encode()).hexdigest():
-                            authenticated = True
-                            username = users[email][0]
+                        hashed_password = hashlib.sha256(
+                            password.encode()).hexdigest()
+                        checkEmail = checkIsEmailExist(email)
+                        if checkEmail == False:
                             conn.send(
-                                f"Login successful. Welcome {username}!".encode(FORMAT))
+                                "Email not registered.".encode(FORMAT))
                         else:
-                            conn.send(
-                                "Invalid email or password.".encode(FORMAT))
+                            dictUserData = getUserData(email)
+                            hashed_password_from_db = dictUserData["Hashed_DB_Password"]
+                            if hashed_password == hashed_password_from_db:
+                                authenticated = True
+                                username = dictUserData["Username"]
+                                conn.send(
+                                    f"Login successful. Welcome {username}!".encode(FORMAT))
+                            else:
+                                conn.send(
+                                    "Invalid email or password.".encode(FORMAT))
                     continue
 
                 # Process other commands only if authenticated
@@ -170,6 +179,20 @@ def checkIsEmailExist(Email):
     else:
         # kalau email nya belum kepake orang lain
         return False
+
+
+def getUserData(Email):
+    SQL_QUERY = '''
+    SELECT Username, Password FROM CLIENT WHERE Email = ?
+    '''
+    result = connectionDB.execute(SQL_QUERY, (Email)).fetchone()
+
+    dictDataUser = {
+        "Username": result[0],
+        "Hashed_DB_Password": result[1]
+    }
+
+    return dictDataUser
 
 
 def registerUser(Email, Username, Password):
