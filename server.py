@@ -20,6 +20,8 @@ LOGIN = "!LOGIN"
 HANDLE_CURRENTROOM_FALSE = "!CURRENTROOM"
 MSGUSER = "!MSGUSER"
 ABOUT = "!ABOUT"
+KICKUSER = "!KICKUSER"
+OWNER = "!OWNER"
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
@@ -42,6 +44,7 @@ def handle_client(conn, addr):
     current_room = None
     authenticated = False
     username = None
+    email = None
 
     while connected:
         try:
@@ -81,19 +84,20 @@ def handle_client(conn, addr):
                                     "There is an error".encode(FORMAT))
 
                     elif msg.startswith(LOGIN):
-                        _, email, password = msg.split(maxsplit=2)
+                        _, emailLogin, password = msg.split(maxsplit=2)
                         hashed_password = hashlib.sha256(
                             password.encode()).hexdigest()
-                        checkEmail = checkIsEmailExist(email)
+                        checkEmail = checkIsEmailExist(emailLogin)
                         if checkEmail == False:
                             conn.send(
                                 "Email not registered.".encode(FORMAT))
                         else:
-                            dictUserData = getUserData(email)
+                            dictUserData = getUserData(emailLogin)
                             hashed_password_from_db = dictUserData["Hashed_DB_Password"]
                             if hashed_password == hashed_password_from_db:
                                 authenticated = True
                                 username = dictUserData["Username"]
+                                email = emailLogin
                                 conn.send(
                                     f"Login successful. Welcome {username}!".encode(FORMAT))
                             else:
@@ -109,7 +113,8 @@ def handle_client(conn, addr):
                         room_owner[room_name] = conn
                         descriptionRooms[room_name] = descRoom
                         dictParticipantsInRoom[room_name] = {}
-                        dictParticipantsInRoom[room_name][conn] = username
+                        dictParticipantsInRoom[room_name][email] = (
+                            conn, username)
                         conn.send(f"Room {room_name} created.".encode(FORMAT))
                     else:
                         conn.send(
@@ -122,8 +127,14 @@ def handle_client(conn, addr):
                             rooms[current_room].remove(conn)
                         rooms[room_name].append(conn)
                         current_room = room_name
-                        dictParticipantsInRoom[room_name][conn] = username
-                        conn.send(f"Joined room {room_name}".encode(FORMAT))
+                        dictParticipantsInRoom[room_name][email] = (
+                            conn, username)
+                        if (room_owner[room_name] != conn):
+                            conn.send(
+                                f"Joined room {room_name}".encode(FORMAT))
+                        else:
+                            conn.send(
+                                f"{OWNER}Joined room {room_name}".encode(FORMAT))
                         broadcast(f"[{username}] joined the room.",
                                   current_room, conn)
                     else:
@@ -132,7 +143,7 @@ def handle_client(conn, addr):
 
                 elif msg.startswith(LEAVE_ROOM):
                     if current_room:
-                        dictParticipantsInRoom[current_room].pop(conn)
+                        dictParticipantsInRoom[current_room].pop(email)
                         rooms[current_room].remove(conn)
                         broadcast(f"[{username}] left the room.", current_room)
                         if room_owner[current_room] == conn:
@@ -147,6 +158,26 @@ def handle_client(conn, addr):
                         conn.send("Left the room.".encode(FORMAT))
                     else:
                         conn.send("You are not in any room.".encode(FORMAT))
+
+                elif msg.startswith(KICKUSER):
+                    _, emailKickedUser = msg.split(maxsplit=1)
+                    dataUser = dictParticipantsInRoom[current_room].get(
+                        emailKickedUser)
+                    if (dataUser == None):
+                        conn.send("User email doesn't exist")
+                    else:
+                        userKickedConn = dataUser[0]
+                        usernameKickedUser = dataUser[1]
+
+                        broadcast(
+                            f"[{usernameKickedUser}] has been kicked from this room", current_room, userKickedConn)
+
+                        userKickedConn.send(
+                            "You have been kicked from this room, you will exit the chat in 5 seconds, Goodbye!".encode(FORMAT))
+
+                        dictParticipantsInRoom[current_room].pop(
+                            emailKickedUser)
+                        rooms[current_room].remove(userKickedConn)
 
                 elif msg == LIST_ROOMS:
                     room_list = "Available rooms:\n" + "\n".join(rooms.keys())
@@ -164,8 +195,11 @@ def handle_client(conn, addr):
                             descriptionRooms[current_room] + "\n\n"
 
                         messageResult = messageResult + "Participants in room: \n"
-                        for currUsername in dictUserDiRoom.values():
-                            messageResult = messageResult + currUsername + "\n"
+                        for currTuple in dictUserDiRoom.items():
+                            emailUser = currTuple[0]
+                            usernameUser = currTuple[1][1]
+
+                            messageResult = messageResult + usernameUser + "     " + emailUser + "\n"
 
                         conn.send(messageResult.encode(FORMAT))
 

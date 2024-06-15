@@ -19,6 +19,8 @@ ADDR = (SERVER, PORT)
 HANDLE_CURRENTROOM_FALSE = "!CURRENTROOM"
 MSGUSER = "!MSGUSER"
 ABOUT = "!ABOUT"
+KICKUSER = "!KICKUSER"
+OWNER = "!OWNER"
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(ADDR)
@@ -49,6 +51,18 @@ def receive_messages():
                 if "Joined room" in message:
                     on_clear_chat()
 
+                if "!OWNERJoined room" in message:
+                    addKickButton()
+
+                    message = message[6:]
+
+                    chat_box.config(state=tk.NORMAL)
+                    chat_box.insert(tk.END, message + '\n', 'system')
+                    chat_box.yview(tk.END)
+                    chat_box.config(state=tk.DISABLED)
+
+                    continue
+
                 chat_box.config(state=tk.NORMAL)
                 chat_box.insert(tk.END, message + '\n', 'system')
                 chat_box.yview(tk.END)
@@ -68,6 +82,15 @@ def receive_messages():
                     chat_box.config(state=tk.NORMAL)
                     chat_box.insert(
                         tk.END, f"Welcome back to main menu!\n", "system")
+                    chat_box.yview(tk.END)
+                    chat_box.config(state=tk.DISABLED)
+                elif "You have been kicked from this room, you will exit the chat in 5 seconds, Goodbye!" in message:
+                    send_message(HANDLE_CURRENTROOM_FALSE)
+                    time.sleep(5)
+                    on_clear_chat()
+                    chat_box.config(state=tk.NORMAL)
+                    chat_box.insert(
+                        tk.END, f"Welcome back to main menu!\n", 'system')
                     chat_box.yview(tk.END)
                     chat_box.config(state=tk.DISABLED)
 
@@ -158,6 +181,22 @@ def chat_page():
     receive_thread = threading.Thread(target=receive_messages)
     receive_thread.start()
 
+    window.mainloop()
+
+
+def addKickButton():
+    global window
+    kick_button = tk.Button(window, text="Kick", command=on_kick)
+    kick_button.pack(side=tk.RIGHT)
+
+
+def on_kick():
+    email = simpledialog.askstring("Kick user", "Enter user email:")
+    if (email):
+        send_message(f"{KICKUSER} {email}")
+
+    receive_thread = threading.Thread(target=receive_messages)
+    receive_thread.start()
     window.mainloop()
 
 
