@@ -22,6 +22,7 @@ MSGUSER = "!MSGUSER"
 ABOUT = "!ABOUT"
 KICKUSER = "!KICKUSER"
 OWNER = "!OWNER"
+KICKBUTTON = "!KICKBUTTON"
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
@@ -147,6 +148,7 @@ def handle_client(conn, addr):
                         rooms[current_room].remove(conn)
                         broadcast(f"[{username}] left the room.", current_room)
                         if room_owner[current_room] == conn:
+                            conn.send(KICKBUTTON.encode(FORMAT))
                             for member in rooms[current_room]:
                                 member.send(
                                     "The room owner has left the room. You have been removed from the room, you will exit the chat in 5 seconds, Goodbye!".encode(FORMAT))

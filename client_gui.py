@@ -63,6 +63,9 @@ def receive_messages():
 
                     continue
 
+                if "!KICKBUTTON" in message:
+                    removeKickButton()
+
                 chat_box.config(state=tk.NORMAL)
                 chat_box.insert(tk.END, message + '\n', 'system')
                 chat_box.yview(tk.END)
@@ -185,9 +188,16 @@ def chat_page():
 
 
 def addKickButton():
-    global window
+    global window, kick_button
     kick_button = tk.Button(window, text="Kick", command=on_kick)
     kick_button.pack(side=tk.RIGHT)
+
+
+def removeKickButton():
+    global kick_button
+    if (kick_button):
+        kick_button.destroy()
+        kick_button = None
 
 
 def on_kick():
@@ -230,10 +240,11 @@ def on_register():
 def on_send():
     global message_entry
     msg = message_entry.get()
-    send_message(msg)
-    message_entry.delete(0, tk.END)
-    if msg == DISCONNECT_MESSAGE:
-        window.quit()
+    if (len(msg) > 0):
+        send_message(msg)
+        message_entry.delete(0, tk.END)
+        if msg == DISCONNECT_MESSAGE:
+            window.quit()
 
 
 def on_create_room():
