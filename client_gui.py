@@ -42,12 +42,24 @@ def receive_messages():
                     chat_box.yview(tk.END)
                     chat_box.config(state=tk.DISABLED)
                     continue
-                if "successful" in message:
+                if "!successful" in message:
                     global authenticated
                     authenticated = True
-                if "Registration successful." in message:
+                if "!Registration !successful." in message:
                     break
-                if "Login successful." in message:
+                if "!Login !successful." in message:
+                    break
+                if "!Email already registered." in message:
+                    error_page("Email already registered")
+                    break
+                if "!There is an error" in message:
+                    error_page("There is an error")
+                    break
+                if "!Email not registered." in message:
+                    error_page("Email not registered")
+                    break
+                if "!Invalid email or password." in message:
+                    error_page("Invalid email or password")
                     break
                 if "Joined room" in message:
                     on_clear_chat()
@@ -66,6 +78,7 @@ def receive_messages():
 
                 if "!KICKBUTTON" in message:
                     removeKickButton()
+                    continue
 
                 chat_box.config(state=tk.NORMAL)
                 chat_box.insert(tk.END, message + '\n', 'system')
@@ -119,16 +132,56 @@ def send_message(msg):
         chat_box.config(state=tk.DISABLED)
 
 
+def error_page(msg):
+
+    error_window = tk.Tk()
+    error_window.title("Error Page")
+
+    window_width = 300
+    window_height = 100
+
+    screen_width = error_window.winfo_screenwidth()
+    screen_height = error_window.winfo_screenheight()
+
+    position_x = (screen_width // 2) - (window_width // 2)
+    position_y = (screen_height // 2) - (window_height // 2)
+
+    error_window.geometry(
+        f'{window_width}x{window_height}+{position_x}+{position_y}')
+
+    error_label = tk.Label(error_window, text=msg, fg="red")
+    error_label.pack(pady=10)
+
+    close_button = tk.Button(error_window, text="Close",
+                             command=error_window.destroy)
+    close_button.pack(pady=10)
+
+    error_window.mainloop()
+
+
 def main_page():
     global window
     window = tk.Tk()
     window.title("Main Page")
 
-    login_button = tk.Button(window, text="Login", command=on_login)
-    login_button.pack()
+    window_width = 300
+    window_height = 100
 
-    register_button = tk.Button(window, text="Register", command=on_register)
-    register_button.pack()
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+
+    position_x = (screen_width // 2) - (window_width // 2)
+    position_y = (screen_height // 2) - (window_height // 2)
+
+    window.geometry(
+        f'{window_width}x{window_height}+{position_x}+{position_y}')
+
+    login_button = tk.Button(window, text="Login",
+                             command=lambda: on_login(window), padx=10, pady=5)
+    login_button.pack(pady=5)
+    register_button = tk.Button(
+        window, text="Register", command=lambda: on_register(window), padx=10, pady=5)
+    register_button.pack(pady=5)
 
     window.mainloop()
 
@@ -212,7 +265,8 @@ def on_kick():
     window.mainloop()
 
 
-def on_login():
+def on_login(window):
+    window.withdraw()
     email = simpledialog.askstring("Login", "Enter email:")
     password = simpledialog.askstring("Login", "Enter password:", show='')
     if email and password:
@@ -225,7 +279,8 @@ def on_login():
             chat_page()
 
 
-def on_register():
+def on_register(window):
+    window.withdraw()
     email = simpledialog.askstring("Register", "Enter email:")
     password = simpledialog.askstring("Register", "Enter password:", show='')
     username = simpledialog.askstring("Register", "Enter username:")

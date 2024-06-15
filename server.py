@@ -71,7 +71,7 @@ def handle_client(conn, addr):
                         checkEmail = checkIsEmailExist(email)
                         if checkEmail == True:
                             conn.send(
-                                "Email already registered.".encode(FORMAT))
+                                "!Email already registered.".encode(FORMAT))
                         else:
                             hashed_password = hashlib.sha256(
                                 password.encode()).hexdigest()
@@ -80,10 +80,10 @@ def handle_client(conn, addr):
                             if (statusMasukanUser == True):
                                 authenticated = True
                                 conn.send(
-                                    "Registration successful.".encode(FORMAT))
+                                    "!Registration !successful.".encode(FORMAT))
                             else:
                                 conn.send(
-                                    "There is an error".encode(FORMAT))
+                                    "!There is an error".encode(FORMAT))
 
                     elif msg.startswith(LOGIN):
                         _, emailLogin, password = msg.split(maxsplit=2)
@@ -92,7 +92,7 @@ def handle_client(conn, addr):
                         checkEmail = checkIsEmailExist(emailLogin)
                         if checkEmail == False:
                             conn.send(
-                                "Email not registered.".encode(FORMAT))
+                                "!Email not registered.".encode(FORMAT))
                         else:
                             dictUserData = getUserData(emailLogin)
                             hashed_password_from_db = dictUserData["Hashed_DB_Password"]
@@ -101,10 +101,10 @@ def handle_client(conn, addr):
                                 username = dictUserData["Username"]
                                 email = emailLogin
                                 conn.send(
-                                    f"Login successful. Welcome {username}!".encode(FORMAT))
+                                    f"!Login !successful. Welcome {username}!".encode(FORMAT))
                             else:
                                 conn.send(
-                                    "Invalid email or password.".encode(FORMAT))
+                                    "!Invalid email or password.".encode(FORMAT))
                     continue
 
                 # Process other commands only if authenticated
