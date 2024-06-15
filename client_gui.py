@@ -190,15 +190,18 @@ def chat_page():
     global window, message_entry
     window = tk.Tk()
     window.title("Chat Client")
+    window.configure(background="gray89")
 
     frame = tk.Frame(window)
     scrollbar = tk.Scrollbar(frame)
+    scrollbar.configure(background="darkgray")
     global chat_box
     chat_box = scrolledtext.ScrolledText(
         frame, state=tk.DISABLED, wrap=tk.WORD)
-    chat_box.tag_config('sent', justify='right')
-    chat_box.tag_config('received', justify='left')
-    chat_box.tag_config("system", justify="center", foreground="gray")
+    chat_box.configure(background="black")
+    chat_box.tag_config('sent', justify='right', foreground="white")
+    chat_box.tag_config('received', justify='left', foreground="white")
+    chat_box.tag_config("system", justify="center", foreground="lightgreen")
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     chat_box.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
     frame.pack(expand=True, fill=tk.BOTH)
