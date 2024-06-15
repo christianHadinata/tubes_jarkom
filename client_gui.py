@@ -21,6 +21,7 @@ MSGUSER = "!MSGUSER"
 ABOUT = "!ABOUT"
 KICKUSER = "!KICKUSER"
 OWNER = "!OWNER"
+WELCOMEMSG = "!WELCOMEMSG"
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(ADDR)
@@ -111,7 +112,7 @@ def send_message(msg):
     client.send(send_length)
     client.send(message)
 
-    if (msg[:9] != REGISTER and msg[:6] != LOGIN and msg[:12] != HANDLE_CURRENTROOM_FALSE):
+    if (msg[:9] != REGISTER and msg[:6] != LOGIN and msg[:12] != HANDLE_CURRENTROOM_FALSE and msg[:11] != WELCOMEMSG):
         chat_box.config(state=tk.NORMAL)
         chat_box.insert(tk.END, f"You: {msg}\n", 'sent')
         chat_box.yview(tk.END)
@@ -184,6 +185,7 @@ def chat_page():
     receive_thread = threading.Thread(target=receive_messages)
     receive_thread.start()
 
+    send_message(f"{WELCOMEMSG}")
     window.mainloop()
 
 

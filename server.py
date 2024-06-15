@@ -23,6 +23,7 @@ ABOUT = "!ABOUT"
 KICKUSER = "!KICKUSER"
 OWNER = "!OWNER"
 KICKBUTTON = "!KICKBUTTON"
+WELCOMEMSG = "!WELCOMEMSG"
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
@@ -125,7 +126,9 @@ def handle_client(conn, addr):
                     _, room_name = msg.split(maxsplit=1)
                     if room_name in rooms:
                         if current_room:
-                            rooms[current_room].remove(conn)
+                            conn.send(
+                                "You are currently in a room, you must leave this room first!".encode(FORMAT))
+                            continue
                         rooms[room_name].append(conn)
                         current_room = room_name
                         dictParticipantsInRoom[room_name][email] = (
@@ -207,6 +210,9 @@ def handle_client(conn, addr):
 
                     else:
                         conn.send("You are in lobby room".encode(FORMAT))
+
+                elif msg == WELCOMEMSG:
+                    conn.send(f"Welcome to lobby {username}!".encode(FORMAT))
                 else:
                     if current_room:
                         broadcast(
