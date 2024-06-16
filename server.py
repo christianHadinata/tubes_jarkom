@@ -107,7 +107,6 @@ def handle_client(conn, addr):
                                     "!Invalid email or password.".encode(FORMAT))
                     continue
 
-                # Process other commands only if authenticated
                 if msg.startswith(CREATE_ROOM):
                     _, room_name, descRoom = msg.split(maxsplit=2)
                     if room_name not in rooms:
@@ -200,11 +199,19 @@ def handle_client(conn, addr):
                             descriptionRooms[current_room] + "\n\n"
 
                         messageResult = messageResult + "Participants in room: \n"
+
+                        connOwner = room_owner[room_name]
                         for currTuple in dictUserDiRoom.items():
                             emailUser = currTuple[0]
+
+                            connUser = currTuple[1][0]
                             usernameUser = currTuple[1][1]
 
-                            messageResult = messageResult + usernameUser + "     " + emailUser + "\n"
+                            if (connUser == connOwner):
+                                messageResult = messageResult + usernameUser + \
+                                    "     " + " (*OWNER*)" + "\n"
+                            else:
+                                messageResult = messageResult + usernameUser + "     " + emailUser + "\n"
 
                         conn.send(messageResult.encode(FORMAT))
 
