@@ -365,6 +365,5 @@ def on_about_button():
                                "Please login first.")
 
 
-# Thread untuk halaman utama (login/register)
 main_page_thread = threading.Thread(target=main_page)
 main_page_thread.start()
